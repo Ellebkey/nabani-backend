@@ -236,18 +236,18 @@ class DeliveryDayService {
       patient: this.patientRef(d),
       package: d.package
         ? {
-          id: d.package.id,
-          code: d.package.code,
-          displayLabel: d.package.displayLabel,
-          pricePerDay: +d.package.pricePerDay,
-        }
+            id: d.package.id,
+            code: d.package.code,
+            displayLabel: d.package.displayLabel,
+            pricePerDay: +d.package.pricePerDay,
+          }
         : null,
       menuDay,
       meals: d.meals
         ? d.meals
-          .slice()
-          .sort((a, b) => (MEAL_SLOT_ORDER[a.mealSlot] ?? 0) - (MEAL_SLOT_ORDER[b.mealSlot] ?? 0))
-          .map((m) => this.toMealDto(m))
+            .slice()
+            .sort((a, b) => (MEAL_SLOT_ORDER[a.mealSlot] ?? 0) - (MEAL_SLOT_ORDER[b.mealSlot] ?? 0))
+            .map((m) => this.toMealDto(m))
         : undefined,
       createdAt: d.createdAt,
       updatedAt: d.updatedAt,

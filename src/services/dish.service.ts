@@ -154,12 +154,14 @@ class DishService {
   private toIngredientDto = (di: DishIngredientInstance): DishIngredientDto => ({
     id: di.id,
     ingredientId: di.ingredientId,
-    ingredient: di.ingredient ? {
-      id: di.ingredient.id,
-      name: di.ingredient.name,
-      foodGroup: di.ingredient.foodGroup,
-      baseUnit: di.ingredient.baseUnit,
-    } : null,
+    ingredient: di.ingredient
+      ? {
+          id: di.ingredient.id,
+          name: di.ingredient.name,
+          foodGroup: di.ingredient.foodGroup,
+          baseUnit: di.ingredient.baseUnit,
+        }
+      : null,
     baseQuantity: +di.baseQuantity,
     unit: di.unit,
     position: di.position,

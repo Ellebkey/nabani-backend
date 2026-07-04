@@ -187,7 +187,11 @@ class PatientService {
     else await db.NutritionPlan.create(payload, { transaction });
   };
 
-  private setDiseases = async (patientId: string, diseaseIds: string[], transaction: import('sequelize').Transaction): Promise<void> => {
+  private setDiseases = async (
+    patientId: string,
+    diseaseIds: string[],
+    transaction: import('sequelize').Transaction,
+  ): Promise<void> => {
     await db.PatientDisease.destroy({ where: { patientId }, transaction });
     if (diseaseIds.length) {
       await db.PatientDisease.bulkCreate(
@@ -197,7 +201,11 @@ class PatientService {
     }
   };
 
-  private setPreferences = async (patientId: string, ingredientIds: string[], transaction: import('sequelize').Transaction): Promise<void> => {
+  private setPreferences = async (
+    patientId: string,
+    ingredientIds: string[],
+    transaction: import('sequelize').Transaction,
+  ): Promise<void> => {
     await db.PatientPreference.destroy({ where: { patientId }, transaction });
     if (ingredientIds.length) {
       await db.PatientPreference.bulkCreate(

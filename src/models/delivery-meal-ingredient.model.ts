@@ -62,9 +62,15 @@ const DeliveryMealIngredientFactory = (
   );
 
   DeliveryMealIngredientInstance.associate = (models) => {
-    DeliveryMealIngredientInstance.belongsTo(models.DeliveryMeal, { as: 'deliveryMeal', foreignKey: 'delivery_meal_id' });
-    DeliveryMealIngredientInstance.belongsTo(models.Ingredient, { as: 'ingredient', foreignKey: 'ingredient_id' });
-    DeliveryMealIngredientInstance.belongsTo(models.Ingredient, { as: 'substitutedFrom', foreignKey: 'substituted_from_ingredient_id' });
+    DeliveryMealIngredientInstance.belongsTo(models.DeliveryMeal, {
+      as: 'deliveryMeal', foreignKey: 'delivery_meal_id',
+    });
+    DeliveryMealIngredientInstance.belongsTo(models.Ingredient, {
+      as: 'ingredient', foreignKey: 'ingredient_id',
+    });
+    DeliveryMealIngredientInstance.belongsTo(models.Ingredient, {
+      as: 'substitutedFrom', foreignKey: 'substituted_from_ingredient_id',
+    });
   };
 
   return DeliveryMealIngredientInstance as ModelClass<DeliveryMealIngredientInstance>;

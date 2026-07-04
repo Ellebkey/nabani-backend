@@ -186,11 +186,11 @@ class SaleService {
     subTotal: +it.subTotal,
     package: it.package
       ? {
-        id: it.package.id,
-        code: it.package.code,
-        displayLabel: it.package.displayLabel,
-        pricePerDay: +it.package.pricePerDay,
-      }
+          id: it.package.id,
+          code: it.package.code,
+          displayLabel: it.package.displayLabel,
+          pricePerDay: +it.package.pricePerDay,
+        }
       : null,
   });
 
@@ -212,11 +212,11 @@ class SaleService {
     patient: this.patientRef(s),
     package: s.package
       ? {
-        id: s.package.id,
-        code: s.package.code,
-        displayLabel: s.package.displayLabel,
-        pricePerDay: +s.package.pricePerDay,
-      }
+          id: s.package.id,
+          code: s.package.code,
+          displayLabel: s.package.displayLabel,
+          pricePerDay: +s.package.pricePerDay,
+        }
       : null,
     createdBy: s.createdBy
       ? { id: s.createdBy.id, username: s.createdBy.username, fullname: s.createdBy.fullname ?? null }

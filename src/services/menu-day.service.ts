@@ -153,11 +153,11 @@ class MenuDayService {
         dishId: meal.dishId ?? null,
         dish: meal.dish
           ? {
-            id: meal.dish.id,
-            name: meal.dish.name,
-            mealTime: meal.dish.mealTime,
-            active: meal.dish.active,
-          }
+              id: meal.dish.id,
+              name: meal.dish.name,
+              mealTime: meal.dish.mealTime,
+              active: meal.dish.active,
+            }
           : null,
         position: meal.position,
       })),

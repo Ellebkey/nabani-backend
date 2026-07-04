@@ -3,6 +3,7 @@
  * Run: NODE_ENV=development npx tsx src/scripts/seed.ts
  * Extended over Phase 1 as domain models land (packages, sample patients, etc.).
  */
+/* eslint-disable no-await-in-loop -- seeding is intentionally sequential */
 import { SequelizeDB, db } from '@config/sequelize';
 import { logger } from '@config/logger';
 

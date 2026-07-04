@@ -93,7 +93,11 @@ class IngredientService {
       logger.info('Ingredient deleted', { ingredientId: id });
     });
 
-  private setDiseases = async (ingredientId: string, diseaseIds: string[], transaction: import('sequelize').Transaction): Promise<void> => {
+  private setDiseases = async (
+    ingredientId: string,
+    diseaseIds: string[],
+    transaction: import('sequelize').Transaction,
+  ): Promise<void> => {
     await db.IngredientDisease.destroy({ where: { ingredientId }, transaction });
     if (diseaseIds.length) {
       await db.IngredientDisease.bulkCreate(

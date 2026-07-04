@@ -71,7 +71,7 @@ class ExpenseService {
         if (!dto.employeeId) throw new BadRequestError('employeeId is required for nómina expenses');
         const employee = await db.Employee.findByPk(dto.employeeId, { transaction });
         if (!employee) throw new NotFoundError('Employee', dto.employeeId);
-        employeeId = dto.employeeId;
+        ({ employeeId } = dto);
       } else if (dto.beneficiary) {
         beneficiaryId = await this.findOrCreateBeneficiary(dto.beneficiary, transaction);
       }
@@ -171,11 +171,11 @@ class ExpenseService {
     type: e.type,
     employee: e.employee
       ? {
-        id: e.employee.id,
-        firstName: e.employee.firstName,
-        lastName: e.employee.lastName,
-        position: e.employee.position,
-      }
+          id: e.employee.id,
+          firstName: e.employee.firstName,
+          lastName: e.employee.lastName,
+          position: e.employee.position,
+        }
       : null,
     comments: e.comments ?? null,
     createdById: e.createdById ?? null,
