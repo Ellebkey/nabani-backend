@@ -31,7 +31,7 @@ const ingredientValidationSchemas = {
     diseaseId: Joi.string().uuid(),
     active: Joi.boolean(),
     offset: Joi.number().integer().min(0).default(0),
-    limit: Joi.number().integer().min(1).max(200)
+    limit: Joi.number().integer().min(1).max(1000)
       .default(50),
   }),
 };
