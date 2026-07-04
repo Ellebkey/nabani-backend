@@ -17,24 +17,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Use Node.js 20
+    - name: Use Node.js 24
       uses: actions/setup-node@v4
       with:
         node-version: '24'
+        cache: 'npm'
     - name: Install dependencies and build tsc
       env:
         NODE_OPTIONS: "--max-old-space-size=4096"
         CI: true
       run: |
-        npm install
+        npm ci
         npm run deploy:prod
+    - name: Bundle production node_modules
+      run: |
+        npm prune --omit=dev
+        mv node_modules backend/node_modules
+        tar -czf backend.tar.gz backend
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
         name: backend-build
-        path: backend
+        path: backend.tar.gz
         retention-days: 1
-        include-hidden-files: true
 
   deploy:
     needs: build
@@ -44,16 +49,15 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: backend-build
-        path: backend
-    - name: Copy files via ssh
+    - name: Copy tarball via ssh
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        source: "backend"
-        target: "/home/ellebkey/apps/expensesv2"
+        source: "backend.tar.gz"
+        target: "/home/ellebkey/apps/nabani"
     - name: Deploy package to digitalocean
       uses: appleboy/ssh-action@master
       env:
@@ -67,4 +71,4 @@ jobs:
         envs: GITHUB_USERNAME, GITHUB_TOKEN
         command_timeout: 20m
         script: |
-          ~/v2expenses-backend
+          ~/nabani-backend

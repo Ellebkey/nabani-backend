@@ -49,7 +49,7 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: myexpenses_test
+          POSTGRES_DB: nabani_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password123
         ports:
@@ -74,7 +74,7 @@ jobs:
       NODE_ENV: test
       JWT_SECRET: test-jwt-secret-for-integration-tests
       SQL_HOST: localhost
-      SQL_DB: myexpenses_test
+      SQL_DB: nabani_test
       SQL_USER: postgres
       SQL_PASSWORD: password123
       SQL_PORT: 5432
@@ -92,7 +92,7 @@ jobs:
 
       - name: Create uuid-ossp extension
         run: |
-          PGPASSWORD=password123 psql -h localhost -U postgres -d myexpenses_test \
+          PGPASSWORD=password123 psql -h localhost -U postgres -d nabani_test \
             -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
 
       - name: Run integration tests

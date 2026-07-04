@@ -164,6 +164,29 @@ migration → tests. Details in `10-backend-domain-spec.md` and `docs/MODULE_DEV
 | `npx tsx src/scripts/seed.ts` | seed catalogs (idempotent) |
 | `python3 scripts/seed-demo.py` | seed full demo data via the API (needs server + admin) |
 
+## Deployment
+
+CI/CD to a DigitalOcean droplet (pm2) via GitHub Actions. On push to `master` (or manual
+`workflow_dispatch`), `.github/workflows/main.yml`:
+
+1. **build** — `npm ci` → `npm run deploy:prod` (compiles to `release/`, assembles a `backend/` folder
+   = `src` + `db-migrations` + `package.json` + `.sequelizerc`) → `npm prune --omit=dev` → move the
+   pruned prod `node_modules` into `backend/` → `tar -czf backend.tar.gz backend` → upload artifact.
+2. **deploy** — `scp` the tarball to `/home/ellebkey/apps/nabani`, then SSH and run `~/nabani-backend`
+   (the droplet's copy of `deploy/nabani-backend.sh`).
+
+`deploy/nabani-backend.sh` swaps the release (keeping the previous as `backend.old`), copies the secret
+env (`~/secrets/.env.nabani` → `backend/.env`; migrations read DB creds from it via
+`db-migrations/config/config.js`), runs `sequelize-cli db:migrate`, `pm2 restart nabani-backend`, then
+**health-checks `GET /api/health-check`** — failing the pipeline (and leaving `backend.old` untouched)
+if the app doesn't come back.
+
+- **Server layout:** `/home/ellebkey/apps/nabani/{backend,frontend}`.
+- **After editing the deploy script, copy it to the droplet:** `scp deploy/nabani-backend.sh <user>@<host>:~/nabani-backend`.
+- **GitHub secrets:** `HOST`, `USERNAME`, `PASSWORD`, `PORT`, `GITHUB_USERNAME`, `GITHUB_TOKEN`.
+- **Droplet prereqs:** nvm (node 24), pm2 with an app named `nabani-backend` started once, and
+  `~/secrets/.env.nabani` (PORT, SQL_*, JWT_SECRET, FRONTEND_URL, RESEND_*).
+
 ## Status
 
 - ✅ **Phase 1 complete** — 28‑table domain + full flujo‑maestro business logic; boots, tsc‑clean, all
