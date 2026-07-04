@@ -1,0 +1,70 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: environment
+        default: DEV
+        required: true
+        description: The environment to run the workflow for
+env:
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+    - name: Install dependencies and build tsc
+      env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+        CI: true
+      run: |
+        npm install
+        npm run deploy:prod
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-build
+        path: backend
+        retention-days: 1
+        include-hidden-files: true
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-build
+        path: backend
+    - name: Copy files via ssh
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        source: "backend"
+        target: "/home/ellebkey/apps/expensesv2"
+    - name: Deploy package to digitalocean
+      uses: appleboy/ssh-action@master
+      env:
+          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        envs: GITHUB_USERNAME, GITHUB_TOKEN
+        command_timeout: 20m
+        script: |
+          ~/v2expenses-backend
