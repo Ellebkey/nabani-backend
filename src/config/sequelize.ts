@@ -2,7 +2,12 @@ import { Sequelize } from 'sequelize';
 import UserFactory from '@models/user.model';
 import UserConfigFactory from '@models/user-config.model';
 import ApiKeyFactory from '@models/api-key.model';
-// --- Nabani domain models are registered below as each is implemented (Phase 1) ---
+// --- Nabani domain models (Phase 1) ---
+// Group A — catalog & clinical reference
+import DiseaseFactory from '@models/disease.model';
+import CalorieLevelFactory from '@models/calorie-level.model';
+import IngredientFactory from '@models/ingredient.model';
+import IngredientDiseaseFactory from '@models/ingredient-disease.model';
 import { DbModels, ModelStatic } from '@interfaces/sequelize.interface';
 import envConfig from './config';
 import { logger } from './logger';
@@ -60,7 +65,12 @@ export class SequelizeDB {
       db.User = UserFactory(sequelize);
       db.UserConfig = UserConfigFactory(sequelize);
       db.ApiKey = ApiKeyFactory(sequelize);
-      // --- Nabani domain models registered here as implemented (Phase 1) ---
+      // --- Nabani domain models (Phase 1) ---
+      // Group A — catalog & clinical reference
+      db.Disease = DiseaseFactory(sequelize);
+      db.CalorieLevel = CalorieLevelFactory(sequelize);
+      db.Ingredient = IngredientFactory(sequelize);
+      db.IngredientDisease = IngredientDiseaseFactory(sequelize);
 
       Object.keys(db)
         .forEach((modelName) => {
