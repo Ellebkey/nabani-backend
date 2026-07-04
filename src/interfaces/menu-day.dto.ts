@@ -2,6 +2,7 @@ import { BaseListDto, DateRangeFilterDto, PaginationDto } from '@interfaces/base
 import type { MenuDayStatus } from '@models/menu-day.model';
 import type { MealSlot } from '@models/menu-day-meal.model';
 import type { MealTime } from '@models/dish.model';
+import type { DishDto } from '@interfaces/dish.dto';
 
 export interface DishRefDto {
   id: string;
@@ -33,7 +34,9 @@ export interface MenuDayMealDto {
   id: string;
   mealSlot: MealSlot;
   dishId: string | null;
-  dish: DishRefDto | null;
+  /** Light ref in list views; the FULL dish (ingredients + per-level portions)
+   *  when fetched via findById/findByDate — the Menú-del-día editor needs it. */
+  dish: DishRefDto | DishDto | null;
   position: number;
 }
 

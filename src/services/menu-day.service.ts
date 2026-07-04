@@ -3,6 +3,7 @@ import { db } from '@config/sequelize';
 import { logger } from '@config/logger';
 import { NotFoundError } from '@errors/app-error';
 import withTransaction from '@utils/transaction.util';
+import DishService from '@services/dish.service';
 import { MenuDayInstance } from '@models/menu-day.model';
 import { WhereClause } from '@interfaces/base.dto';
 import {
@@ -51,7 +52,7 @@ class MenuDayService {
   findById = async (id: string): Promise<MenuDayDto> => {
     const menuDay = await db.MenuDay.findByPk(id, { include: [this.mealsInclude()] });
     if (!menuDay) throw new NotFoundError('MenuDay', id);
-    return this.toDto(menuDay);
+    return this.withFullDishes(this.toDto(menuDay));
   };
 
   findByDate = async (date: string): Promise<MenuDayDto> => {
@@ -59,7 +60,21 @@ class MenuDayService {
       where: { menuDate: date }, include: [this.mealsInclude()],
     });
     if (!menuDay) throw new NotFoundError('MenuDay', date);
-    return this.toDto(menuDay);
+    return this.withFullDishes(this.toDto(menuDay));
+  };
+
+  /** Replaces each meal's light dish ref with the FULL dish (ingredients +
+   *  per-level portions) so the Menú-del-día editor can render/edit portions. */
+  private withFullDishes = async (dto: MenuDayDto): Promise<MenuDayDto> => {
+    const meals = await Promise.all(dto.meals.map(async (meal) => {
+      if (!meal.dishId) return meal;
+      try {
+        return { ...meal, dish: await DishService.findById(meal.dishId) };
+      } catch {
+        return meal;
+      }
+    }));
+    return { ...dto, meals };
   };
 
   create = async (dto: CreateMenuDayDto, createdById: string | null): Promise<MenuDayDto> =>
