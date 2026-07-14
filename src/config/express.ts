@@ -5,7 +5,8 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { errorMiddleware, notFound, converterErr } from '@errors/index';
 import { apiRateLimiter } from '@middlewares/rate-limit.middleware';
-import { logger } from './logger';
+import { requestContextMiddleware } from '@middlewares/request-context.middleware';
+import { httpLoggerMiddleware } from '@middlewares/http-logger.middleware';
 import IndexRoute from '../index.route';
 import envConfig from './config';
 import { setupSwagger } from './swagger.config';
@@ -21,6 +22,11 @@ export default class ExpressServer {
   }
 
   private middlewareSetup() {
+    // Correlation scope + access logging go first so EVERY request — including
+    // rate-limited and failed ones — gets a requestId and an access-log line.
+    this.app.use(requestContextMiddleware);
+    this.app.use(httpLoggerMiddleware);
+
     // Keep Express 4's nested query-string parsing (Express 5 defaults to 'simple')
     this.app.set('query parser', 'extended');
 
@@ -34,6 +40,9 @@ export default class ExpressServer {
     this.app.use(cors({
       origin: envConfig.frontendUrl,
       credentials: true,
+      // Let the frontend read the correlation id on successful responses too
+      // (error bodies already carry it as error.requestId)
+      exposedHeaders: ['X-Request-Id'],
     }));
 
     // Setup requests format parsing (Only JSON requests will be valid)
@@ -41,26 +50,6 @@ export default class ExpressServer {
     this.app.use(express.json());
 
     this.app.use(cookieParser());
-
-    // HTTP request logging
-    if (envConfig.env === 'development' || envConfig.env === 'test') {
-      this.app.use((req, res, next) => {
-        const start = Date.now();
-        logger.http(`${req.method} ${req.url}`, {
-          method: req.method,
-          url: req.url,
-          query: req.query,
-          userAgent: req.get('User-Agent'),
-        });
-
-        // Log response when request finishes
-        res.on('finish', () => {
-          const duration = Date.now() - start;
-          logger.http(`${req.method} - ${res.statusCode} ${req.url} ${duration}ms`);
-        });
-        next();
-      });
-    }
   }
 
   private swaggerSetup() {

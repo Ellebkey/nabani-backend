@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { setRequestContext } from '@config/request-context';
 import { UnauthorizedError } from '@errors/app-error';
 import JWTService from '@services/jwt.service';
 
@@ -30,6 +31,9 @@ export default class Auth {
 
       // Attach user payload to request for use in controllers
       req.user = userPayload;
+
+      // From here on, every log line in this request carries the userId
+      setRequestContext({ userId: userPayload.id });
 
       return next();
     } catch {

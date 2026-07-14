@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '@config/logger';
+import { getRequestContext } from '@config/request-context';
 import envConfig from '@config/config';
 import {
   AppError,
@@ -14,6 +15,7 @@ interface ErrorResponse {
     code: string;
     message: string;
     status: number;
+    requestId?: string;
     details?: unknown;
     stack?: string;
   };
@@ -102,6 +104,12 @@ export function errorMiddleware(
     },
   };
 
+  // Correlate the client-facing error with its server-side log trace
+  const requestId = getRequestContext()?.requestId;
+  if (requestId) {
+    response.error.requestId = requestId;
+  }
+
   // Add details if present (e.g., validation errors)
   const errorWithDetails = err as AppError & { errors?: unknown };
   if (errorWithDetails.errors || err.context) {
@@ -113,13 +121,31 @@ export function errorMiddleware(
     response.error.stack = err.stack;
   }
 
-  // Log error with context
-  logger.error(err.message, err, {
+  // Log with a severity that matches the outcome so routine client errors don't
+  // flood the error stream:
+  //   5xx                 -> error (real server fault; keep the stack)
+  //   404 route-not-found -> debug (bots/monitors/probes hitting unknown paths;
+  //                                 suppressed in production, visible in dev)
+  //   other 4xx           -> warn  (expected client errors: 400/401/403/409/422)
+  // A single plain-object meta is passed (never the Error itself): this avoids
+  // winston's "message duplicated" behaviour and keeps the structured fields.
+  const { status } = response.error;
+  let level: 'error' | 'warn' | 'debug';
+  if (status >= 500) {
+    level = 'error';
+  } else if (err.code === 'ROUTE_NOT_FOUND') {
+    level = 'debug';
+  } else {
+    level = 'warn';
+  }
+
+  logger.log(level, err.message, {
     code: response.error.code,
-    status: response.error.status,
+    status,
     path: req.path,
     method: req.method,
-    details: response.error.details,
+    ...(response.error.details ? { details: response.error.details } : {}),
+    ...(level === 'error' ? { stack: err.stack } : {}),
   });
 
   res.status(response.error.status).json(response);

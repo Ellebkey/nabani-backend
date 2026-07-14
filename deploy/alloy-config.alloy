@@ -1,0 +1,66 @@
+// Grafana Alloy pipeline — ships nabani-api journald logs to Loki.
+//
+// The app runs as the systemd unit `nabani-api.service` (PM2 is
+// decommissioned); winston writes JSON to stdout and journald captures it.
+//
+// MERGE GUIDANCE — the live /etc/alloy/config.alloy already has a journal
+// source (reading ALL units) and a loki.write. Do NOT paste this whole file:
+//   - a duplicate component name (e.g. a second `loki.write "default"`) makes
+//     Alloy fail to load;
+//   - a second `loki.source.journal` reading the same unit double-ships every
+//     line (two streams with different labels → Loki won't dedupe them).
+// Instead graft the `loki.process` STAGES below into the existing maguey/shared
+// pipeline (a `stage.match { selector = "{unit=\"nabani-api.service\"}" ... }`).
+// Applying this is a MANUAL droplet step + `systemctl restart alloy`; merging
+// the PR does not ship it.
+
+loki.source.journal "nabani_api" {
+  matches    = "_SYSTEMD_UNIT=nabani-api.service"
+  // Keep label continuity with existing dashboards/queries
+  labels     = { unit = "nabani-api.service" }
+  forward_to = [loki.process.nabani_api.receiver]
+}
+
+loki.process "nabani_api" {
+  // One flat JSON object per line (contract in docs/LOGGING.md). Non-JSON
+  // lines (raw crash output from node itself) still ship — they just skip
+  // the parsed labels and keep journald's ingest timestamp.
+  stage.json {
+    expressions = {
+      level = "level",
+      env   = "env",
+      app   = "service",
+      ts    = "timestamp",
+    }
+  }
+
+  // Index by the app's own RFC3339 timestamp, not journald's ingest time
+  stage.timestamp {
+    source = "ts"
+    format = "RFC3339Nano"
+  }
+
+  // Keep label cardinality low: app + env + level ONLY (unit comes from the
+  // source). `app` is promoted from the JSON `service` field so the
+  // docs/LOGGING.md cookbook queries ({app="nabani-api"}) match live data.
+  // Everything else (requestId, userId, status…) stays in the line and is
+  // queried with `| json` — never promote high-cardinality fields to labels.
+  stage.labels {
+    values = {
+      level = "",
+      env   = "",
+      app   = "",
+    }
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
+
+// Only for a from-scratch install — the live config already has a writer;
+// point the process stage's forward_to at the existing one instead.
+loki.write "default" {
+  endpoint {
+    // Loki runs on the shared docker network — localhost won't resolve there
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

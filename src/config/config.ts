@@ -7,6 +7,7 @@ config({ path: resolve(__dirname, '../../.env'), quiet: true });
 interface EnvVars {
   NODE_ENV: string;
   PORT: number;
+  LOG_LEVEL: string;
   JWT_SECRET: string;
   FRONTEND_URL: string;
   RESEND_API_KEY: string;
@@ -24,6 +25,11 @@ const envVarsSchema = joi.object({
     .default('development'),
   PORT: joi.number()
     .default(4040),
+  LOG_LEVEL: joi.string()
+    .valid('error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly')
+    .allow('')
+    .default('')
+    .description('Winston level override (defaults: http in production/stage, warn in test, debug in development)'),
   JWT_SECRET: joi.string().required()
     .description('JWT Secret required to sign'),
   FRONTEND_URL: joi.string()
@@ -57,6 +63,7 @@ if (error) {
 const envConfig = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
+  logLevel: envVars.LOG_LEVEL,
   jwtSecret: envVars.JWT_SECRET,
   frontendUrl: envVars.FRONTEND_URL,
   resend: {

@@ -4,4 +4,6 @@ export const logger = {
   warn: jest.fn(),
   verbose: jest.fn(),
   http: jest.fn(),
+  debug: jest.fn(),
+  log: jest.fn(),
 };
