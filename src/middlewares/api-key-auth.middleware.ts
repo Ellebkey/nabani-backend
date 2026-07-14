@@ -5,6 +5,8 @@ import {
   RequestHandler,
 } from 'express';
 
+import { setRequestContext } from '@config/request-context';
+
 import JWTService from '@services/jwt.service';
 import ApiKeyService from '@services/api-key.service';
 
@@ -47,6 +49,7 @@ export function apiKeyOrJwt({ scope, roles }: CombinedAuthOptions): RequestHandl
         }
         req.user = user;
         req.auth = { method: 'apikey', apiKeyId: apiKey.id, scopes: apiKey.scopes };
+        setRequestContext({ userId: user.id, apiKeyId: apiKey.id });
         return next();
       } catch (error) {
         return next(error);
@@ -65,6 +68,7 @@ export function apiKeyOrJwt({ scope, roles }: CombinedAuthOptions): RequestHandl
 
       req.user = user;
       req.auth = { method: 'jwt' };
+      setRequestContext({ userId: user.id });
 
       const userRoles = user.roles ?? [];
       if (!roles.some((role) => userRoles.includes(role))) {

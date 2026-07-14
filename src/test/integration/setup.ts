@@ -10,6 +10,7 @@ jest.mock('@config/logger', () => ({
     debug: jest.fn(),
     verbose: jest.fn(),
     http: jest.fn(),
+    log: jest.fn(),
   },
 }));
 

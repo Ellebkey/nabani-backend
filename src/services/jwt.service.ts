@@ -138,7 +138,12 @@ class JWTService {
     try {
       return jwt.verify(token, envConfig.jwtSecret) as JWTPayload;
     } catch (error) {
-      logger.error('Error validating JWT token', error);
+      // Expired/invalid tokens are a routine client condition (the auth middleware
+      // surfaces this as a 401 the frontend handles by refreshing). Log at debug so
+      // it stays out of the production error stream.
+      logger.debug('JWT validation failed', {
+        reason: error instanceof Error ? error.message : String(error),
+      });
       throw new BusinessRuleError('Invalid or expired token');
     }
   };
