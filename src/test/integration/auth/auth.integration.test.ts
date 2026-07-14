@@ -334,7 +334,7 @@ describe('Auth Integration Tests', () => {
 
       // Use the token on a protected endpoint
       const protectedRes = await request(app)
-        .get('/api/articles')
+        .get('/api/dishes')
         .set('Authorization', loginRes.body.token);
 
       expect(protectedRes.status).not.toBe(401);
@@ -342,7 +342,7 @@ describe('Auth Integration Tests', () => {
 
     it('When no token on protected endpoint, returns 401', async () => {
       const res = await request(app)
-        .get('/api/articles');
+        .get('/api/dishes');
 
       expect(res.status).toBe(401);
     });
