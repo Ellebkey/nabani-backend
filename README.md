@@ -169,7 +169,7 @@ tests (sync creates the table; no migration needed). Details in `10-backend-doma
 
 ## Deployment
 
-CI/CD to a DigitalOcean droplet (pm2) via GitHub Actions. On push to `master` (or manual
+CI/CD to a DigitalOcean droplet (systemd) via GitHub Actions. On push to `master` (or manual
 `workflow_dispatch`), `.github/workflows/main.yml`:
 
 1. **build** — `npm ci` → `npm run deploy:prod` (compiles to `release/`, assembles a `backend/` folder
@@ -180,15 +180,15 @@ CI/CD to a DigitalOcean droplet (pm2) via GitHub Actions. On push to `master` (o
 
 `deploy/nabani-backend.sh` swaps the release (keeping the previous as `backend.old`), copies the secret
 env (`~/secrets/.env.nabani` → `backend/.env`; migrations read DB creds from it via
-`db-migrations/config/config.js`), runs `sequelize-cli db:migrate`, `pm2 restart nabani-backend`, then
+`db-migrations/config/config.js`), runs `sequelize-cli db:migrate`, `systemctl restart nabani-api`, then
 **health-checks `GET /api/health-check`** — failing the pipeline (and leaving `backend.old` untouched)
 if the app doesn't come back.
 
 - **Server layout:** `/home/ellebkey/apps/nabani/{backend,frontend}`.
 - **After editing the deploy script, copy it to the droplet:** `scp deploy/nabani-backend.sh <user>@<host>:~/nabani-backend`.
 - **GitHub secrets:** `HOST`, `USERNAME`, `PASSWORD`, `PORT`, `GITHUB_USERNAME`, `GITHUB_TOKEN`.
-- **Droplet prereqs:** nvm (node 24), pm2 with an app named `nabani-backend` started once, and
-  `~/secrets/.env.nabani` (PORT, SQL_*, JWT_SECRET, FRONTEND_URL, RESEND_*).
+- **Droplet prereqs:** nvm (node 24), a `nabani-api` systemd unit pointing at the backend dir, and
+  `~/secrets/.env.nabani` (PORT, SQL_*, JWT_SECRET, FRONTEND_URL, RESEND_*). Prod listens on :8001.
 
 ## Status
 

@@ -37,8 +37,8 @@ log "Running migrations..."
 npx sequelize-cli db:migrate
 log "Migrations done"
 
-log "Restarting pm2 app"
-pm2 restart nabani-backend --update-env
+log "Restarting systemd service"
+systemctl restart nabani-api
 
 # Health check — fail the pipeline if the app doesn't come back
 PORT=$(grep -oP '^PORT=\K\d+' .env || echo 5333)
@@ -53,5 +53,6 @@ for i in $(seq 1 10); do
 done
 
 log "App did NOT respond after 20s — deploy FAILED (previous release in backend.old)"
-pm2 logs nabani-backend --nostream --lines 30
+journalctl -u nabani-api --no-pager -n 30
 exit 1
+
