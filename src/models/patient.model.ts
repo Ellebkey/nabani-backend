@@ -82,6 +82,10 @@ const PatientFactory = (sequelize: Sequelize): ModelClass<PatientInstance> => {
       createdAt: 'created_at',
       updatedAt: 'updated_at',
       modelName: 'Patient',
+      indexes: [
+        { fields: ['nutriologa_id'] },
+        { fields: ['status'] },
+      ],
     },
   );
 

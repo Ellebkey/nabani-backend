@@ -22,6 +22,8 @@ export interface DishRefDto {
 export interface IngredientRefDto {
   id: string;
   name: string;
+  baseQuantity?: number;
+  baseUnit?: string;
 }
 
 export interface DeliveryMealIngredientDto {

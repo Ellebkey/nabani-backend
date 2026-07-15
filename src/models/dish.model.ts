@@ -47,6 +47,9 @@ const DishFactory = (sequelize: Sequelize): ModelClass<DishInstance> => {
       createdAt: 'created_at',
       updatedAt: 'updated_at',
       modelName: 'Dish',
+      indexes: [
+        { fields: ['meal_time'] },
+      ],
     },
   );
 

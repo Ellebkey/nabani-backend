@@ -85,11 +85,14 @@ python3 scripts/seed-demo.py
 
 ## Schema: `sync()` vs migrations (read this)
 
-Dev currently builds the schema with **`sequelize.sync()` at boot** (models are the source of truth).
-Per‑resource **migrations exist** in `db-migrations/migrations/` for the domain tables **except** the
-infra tables (`user`, `user_config`, `api_keys`, which sync creates). Before a real prod deploy, author
-those three migrations and run `npm run db:migrate` instead of relying on sync. `db-migrations/config/
-config.js` reads DB creds from env (no committed secrets).
+**Models are the source of truth**: `sequelize.sync()` at boot creates any missing table, in dev and
+prod alike (a failed sync exits the process in prod/stage so the deploy health check catches it).
+`db-migrations/migrations/` holds only **incremental changes sync can't do** — extensions, ALTERs of
+existing tables, data backfills. The deploy runs `db:migrate` before restarting the app, so future
+migrations ship automatically; today the only one is the `uuid-ossp` extension (needed before sync,
+since every PK defaults to `uuid_generate_v4()`). Do **not** write create-table migrations for new
+models — sync handles those. `db-migrations/config/config.js` reads DB creds from env (no committed
+secrets).
 
 ## Architecture — strict 6‑layer flow
 
@@ -149,7 +152,7 @@ JWT via `Auth.checkAuth`; role gate via `requireRole(...)` after it. Roles (`src
 Copy the **Group‑A template** (`src/{models,interfaces,validations,services,controllers,routes}/ingredient*`
 + `disease*` / `calorie-level*`): model → DTO → validation → service → controller → route (auto‑loaded)
 → **register the model in `config/sequelize.ts` AND `interfaces/sequelize.interface.ts` (DbModels)** →
-migration → tests. Details in `10-backend-domain-spec.md` and `docs/MODULE_DEVELOPMENT_GUIDE.md`.
+tests (sync creates the table; no migration needed). Details in `10-backend-domain-spec.md` and `docs/MODULE_DEVELOPMENT_GUIDE.md`.
 
 ## Scripts
 

@@ -52,6 +52,10 @@ const EmployeeFactory = (sequelize: Sequelize): ModelClass<EmployeeInstance> => 
       createdAt: 'created_at',
       updatedAt: 'updated_at',
       modelName: 'Employee',
+      indexes: [
+        { fields: ['user_id'] },
+        { fields: ['active'] },
+      ],
     },
   );
 

@@ -43,6 +43,10 @@ const DishIngredientFactory = (sequelize: Sequelize): ModelClass<DishIngredientI
       underscored: true,
       timestamps: false,
       modelName: 'DishIngredient',
+      indexes: [
+        { fields: ['dish_id'] },
+        { fields: ['ingredient_id'] },
+      ],
     },
   );
 
