@@ -50,7 +50,7 @@ class DeliveryDayService {
         model: db.DeliveryMealIngredient,
         as: 'ingredients',
         include: [
-          { model: db.Ingredient, as: 'ingredient', attributes: ['id', 'name'] },
+          { model: db.Ingredient, as: 'ingredient', attributes: ['id', 'name', 'baseQuantity', 'baseUnit'] },
           { model: db.Ingredient, as: 'substitutedFrom', attributes: ['id', 'name'] },
         ],
       },
@@ -190,7 +190,14 @@ class DeliveryDayService {
   ): DeliveryMealIngredientDto => ({
     id: mi.id,
     ingredientId: mi.ingredientId,
-    ingredient: mi.ingredient ? { id: mi.ingredient.id, name: mi.ingredient.name } : null,
+    ingredient: mi.ingredient
+      ? {
+          id: mi.ingredient.id,
+          name: mi.ingredient.name,
+          baseQuantity: +mi.ingredient.baseQuantity,
+          baseUnit: mi.ingredient.baseUnit,
+        }
+      : null,
     portions: +mi.portions,
     conflictType: mi.conflictType ?? null,
     substitutedFromIngredientId: mi.substitutedFromIngredientId ?? null,

@@ -124,7 +124,25 @@ class AdjustmentService {
       diseaseConflictCount,
       diseases: (patient.diseases ?? []).map((d) => ({ id: d.id, name: d.name })),
       preferences: (patient.preferences ?? []).map((i) => ({ id: i.id, name: i.name })),
-      meals: dd.meals ?? [],
+      meals: (dd.meals ?? []).map((m) => ({
+        id: m.id,
+        mealSlot: m.mealSlot,
+        dishId: m.dishId ?? null,
+        dishName: m.dish?.name ?? null,
+        included: m.included,
+        ingredients: (m.ingredients ?? []).map((mi) => ({
+          id: mi.id,
+          ingredientId: mi.ingredientId,
+          name: mi.ingredient?.name ?? '',
+          portions: mi.portions,
+          conflictType: mi.conflictType ?? null,
+          substitutedFrom: mi.substitutedFrom?.name ?? null,
+          eliminated: mi.eliminated,
+          position: mi.position,
+          quantity: mi.ingredient?.baseQuantity ? +mi.ingredient.baseQuantity : null,
+          unit: mi.ingredient?.baseQuantity ? mi.ingredient.baseUnit ?? null : null,
+        })),
+      })),
     };
   };
 
@@ -158,11 +176,11 @@ class AdjustmentService {
     return candidates
       .filter((c) => !(c.diseases ?? []).some((d) => diseaseSet.has(d.id)))
       .map((c) => ({
-        id: c.id,
+        ingredientId: c.id,
         name: c.name,
         foodGroup: c.foodGroup,
-        baseUnit: c.baseUnit,
-        baseQuantity: +c.baseQuantity,
+        quantity: +c.baseQuantity > 0 ? +c.baseQuantity : null,
+        unit: +c.baseQuantity > 0 ? c.baseUnit : null,
       }));
   };
 
