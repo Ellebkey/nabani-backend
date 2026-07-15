@@ -139,6 +139,11 @@ export class SequelizeDB {
       logger.info('PostgreSQL Database synchronized');
     } catch (e) {
       logger.error('Unable to connect to the database:', e);
+      // sync() is the schema mechanism — a booted app without a synced DB would
+      // pass the deploy health check while every real endpoint fails.
+      if (envConfig.env === 'production' || envConfig.env === 'stage') {
+        process.exit(1);
+      }
     }
   };
 }
