@@ -54,7 +54,7 @@ jobs:
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
+        key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.PORT }}
         source: "backend.tar.gz"
         target: "/home/ellebkey/apps/nabani"
@@ -66,7 +66,7 @@ jobs:
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
+        key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.PORT }}
         envs: GITHUB_USERNAME, GITHUB_TOKEN
         command_timeout: 20m
